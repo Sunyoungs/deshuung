@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'pages/payments.dart';
+import 'pages/favorite.dart';
+import 'pages/home.dart';
+import 'pages/car.dart';
+import 'pages/mypage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -7,48 +12,26 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Deshuung',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        brightness: Brightness.light, 
-        primaryColor: Colors.white, 
-        scaffoldBackgroundColor: Colors.white, 
+        brightness: Brightness.light,
+        primaryColor: Colors.white,
+        scaffoldBackgroundColor: Colors.white,
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
         ),
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Colors.white, 
-          selectedItemColor: Colors.black, 
+          backgroundColor: Colors.white,
+          selectedItemColor: Colors.black,
           unselectedItemColor: Colors.grey,
-        ),
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.black),
-          bodyMedium: TextStyle(color: Colors.black),
-          titleLarge: TextStyle(color: Colors.black),
         ),
       ),
       home: const TabView(),
-    );
-  }
-}
-
-class SearchScreen extends StatelessWidget {
-  const SearchScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Search Screen"),
-      ),
-      body: const Center(
-        child: Text("This is the Search Screen."),
-      ),
     );
   }
 }
@@ -59,54 +42,42 @@ class TabView extends StatefulWidget {
   State<TabView> createState() => _TabViewState();
 }
 
-class _TabViewState extends State<TabView> with SingleTickerProviderStateMixin {
-  int _index = 0;
-  late TabController _tabController;
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 5, vsync: this);
-    _tabController.addListener(() {setState(() {_index = _tabController.index;});});
-  }
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
+class _TabViewState extends State<TabView> {
+  int _currentIndex = 2; // 홈 페이지가 기본
+
+  final List<Widget> _pages = const [
+    PayPage(),
+    FavoritePage(),
+    HomePage(), // 검색창 포함
+    CarPage(),
+    MyPage(),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Deshuung')),
-      body: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: SearchBar(
-          trailing: const [Icon(Icons.search)], hintText: "검색어를 입력하세요",
-        ),
+      appBar: AppBar(
+        title: const Text('Deshuung'),
+      ),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
       ),
       bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
         onTap: (int index) {
-          _tabController.animateTo(index);
+          setState(() {
+            _currentIndex = index;
+          });
         },
-        currentIndex: _index,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.payments), label: 'pay'),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'my favorite'),
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.directions_car), label: 'my car'),
+          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'favorite'),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'home'),
+          BottomNavigationBarItem(icon: Icon(Icons.directions_car), label: 'car'),
           BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: 'my page'),
         ],
       ),
-      /*child: TabBarView(
-        physics: const NeverScrollableScrollPhysics(),
-        controller: _tabController,
-        children: const [
-          PayPage(),
-          FavoritePage(),
-          HomePage(),
-          CarPage(),
-          PagePage(),
-        ],
-      ),*/
     );
   }
 }
