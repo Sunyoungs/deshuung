@@ -14,10 +14,18 @@ class MyApp extends StatelessWidget {
       title: 'Deshuung',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        
         colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 255, 255, 255)),
       ),
-      home: MyHomePage(),
+      home: Scaffold(
+        appBar: AppBar(title: const Text('Deshuung')),
+        body: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: SearchBar(
+            trailing: [Icon(Icons.search)],
+            hintText: "검색어를 입력하세요",
+          ),
+        ),
+      ),
     );
   }
 }
