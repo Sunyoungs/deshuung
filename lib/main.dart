@@ -56,7 +56,6 @@ class _TabViewState extends State<TabView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-<<<<<<< HEAD
       appBar: AppBar(
         title: const Text('Deshuung'),
       ),
@@ -66,20 +65,6 @@ class _TabViewState extends State<TabView> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-=======
-      appBar: AppBar(title: const Text('Deshuung')),
-      body: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: SearchBar(
-          backgroundColor: MaterialStateProperty.all(const Color.fromARGB(255, 239, 239, 239)),
-          trailing: const [Icon(Icons.search)], hintText: "검색어를 입력하세요",
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.black, // 선택된 아이템의 색
-        unselectedItemColor: Colors.grey, // 선택되지 않은 아이템의 색 (여기서는 둘이 같게 함)
-        type: BottomNavigationBarType.fixed, // 아이콘과 텍스트가 항상 함께 보임
->>>>>>> a9ffa703ed755f2e12114dabc1c0c656939a05df
         onTap: (int index) {
           setState(() {
             _currentIndex = index;
