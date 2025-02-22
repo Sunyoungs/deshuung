@@ -30,6 +30,7 @@ class MyApp extends StatelessWidget {
           selectedItemColor: Colors.black,
           unselectedItemColor: Colors.grey,
         ),
+        
       ),
       home: const TabView(),
     );
@@ -65,6 +66,9 @@ class _TabViewState extends State<TabView> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
+        selectedItemColor: Colors.black,
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
         onTap: (int index) {
           setState(() {
             _currentIndex = index;
