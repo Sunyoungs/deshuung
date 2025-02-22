@@ -10,7 +10,6 @@ class HomePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 예쁘게 꾸민 검색창
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             decoration: BoxDecoration(
