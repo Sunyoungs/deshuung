@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-List<String> items = ['관심 매장 1', '관심 매장 2', '관심 매장 3', '관심 매장 4', '이거근데DB에서가져와야되죠'];
-List<String> itemContents = ['공릉동 스타벅스', '묵동 이디야', '태릉입구 스타벅스', '컴포즈서울여대점', '어렵다'];
+List<String> items = ['차량 1', '차량 2', '차량 3', '차량 4', '이거근데DB에서가져와야되죠'];
+List<String> itemContents = ['차량', '차량', '차량', '차량', '어렵다'];
 
 class CarPage extends StatelessWidget {
   const CarPage({super.key});
@@ -25,18 +25,21 @@ class CarPage extends StatelessWidget {
       body: ListView.builder(
         itemCount: items.length,
         itemBuilder: (context, index) {
-          return Card(
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.elliptical(10, 10))
-            ),
-            child: ListTile(
-              title: Text(items[index]),
-              onTap: () => cardClickEvent(context, index),
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 3.0, horizontal: 15.0),
+            child: Card(
+              elevation: 3,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.elliptical(10, 10)),
+              ),
+              child: ListTile(
+                title: Text(items[index]),
+                onTap: () => cardClickEvent(context, index),
+              ),
             ),
           );
-        },
-      ),
+        }
+      )
     );
   }
 }
@@ -49,7 +52,7 @@ class ContentPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Content'),
+        title: Text('Car List'),
       ),
       body: Center(
         child: Text(content),

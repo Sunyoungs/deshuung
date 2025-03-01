@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class CarinfoPage extends StatelessWidget {
-  const CarinfoPage({super.key});
+class PaymentPage extends StatelessWidget {
+  const PaymentPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Car Info Page'),
+        title: const Text('Payment Page'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -16,7 +16,7 @@ class CarinfoPage extends StatelessWidget {
         ),
       ),
       body: const Center(
-        child: Text('This is Car Info Page.'),
+        child: Text('This is Payment Page.'),
       ),
     );
   }
