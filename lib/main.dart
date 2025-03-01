@@ -4,6 +4,7 @@ import 'pages/favorite.dart';
 import 'pages/home.dart';
 import 'pages/car.dart';
 import 'pages/mypage.dart';
+import 'pages/carinfo.dart';
 
 void main() {
   runApp(const MyApp());
@@ -57,7 +58,7 @@ class _TabViewState extends State<TabView> {
   void _showFullScreenBottomSheet(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const carinfoPage()),
+      MaterialPageRoute(builder: (context) => const CarinfoPage()),
     );
   }
 
@@ -93,18 +94,6 @@ class _TabViewState extends State<TabView> {
           BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: 'my page'),
         ],
       ),
-    );
-  }
-}
-
-class carinfoPage extends StatelessWidget {
-  const carinfoPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('내 차 정보 페이지지')),
-      body: const Center(child: Text('내차정보')),
     );
   }
 }
