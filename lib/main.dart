@@ -31,7 +31,6 @@ class MyApp extends StatelessWidget {
           selectedItemColor: Colors.black,
           unselectedItemColor: Colors.grey,
         ),
-        
       ),
       home: const TabView(),
     );
@@ -78,6 +77,8 @@ class _TabViewState extends State<TabView> {
         children: _pages,
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         onPressed: () => _showSlidingbottom(context),
         child: const Icon(Icons.add),
       ),
