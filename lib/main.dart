@@ -54,6 +54,13 @@ class _TabViewState extends State<TabView> {
     MyPage(),
   ];
 
+  void _showFullScreenBottomSheet(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const carinfoPage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,6 +70,10 @@ class _TabViewState extends State<TabView> {
       body: IndexedStack(
         index: _currentIndex,
         children: _pages,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showFullScreenBottomSheet(context),
+        child: const Icon(Icons.add),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
@@ -82,6 +93,18 @@ class _TabViewState extends State<TabView> {
           BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: 'my page'),
         ],
       ),
+    );
+  }
+}
+
+class carinfoPage extends StatelessWidget {
+  const carinfoPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('전체 화면 바텀시트')),
+      body: const Center(child: Text('이 페이지가 전체 화면으로 보입니다!')),
     );
   }
 }
