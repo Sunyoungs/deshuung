@@ -55,10 +55,15 @@ class _TabViewState extends State<TabView> {
     MyPage(),
   ];
 
-  void _showFullScreenBottomSheet(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const CarinfoPage()),
+  void _showSlidingbottom(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => const CarinfoPage(),
     );
   }
 
@@ -73,7 +78,7 @@ class _TabViewState extends State<TabView> {
         children: _pages,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showFullScreenBottomSheet(context),
+        onPressed: () => _showSlidingbottom(context),
         child: const Icon(Icons.add),
       ),
       bottomNavigationBar: BottomNavigationBar(
