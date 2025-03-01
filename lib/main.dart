@@ -103,8 +103,8 @@ class carinfoPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('전체 화면 바텀시트')),
-      body: const Center(child: Text('이 페이지가 전체 화면으로 보입니다!')),
+      appBar: AppBar(title: const Text('내 차 정보 페이지지')),
+      body: const Center(child: Text('내차정보')),
     );
   }
 }
