@@ -27,8 +27,8 @@ class CarinfoPage extends StatelessWidget {
               ),
             ),
           );
-        }
-      )
+        },
+      ),
     );
   }
 }
