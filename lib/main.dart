@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart'; // Firebase Core 패키지 임포트
+import 'package:firebase_core/firebase_core.dart';
 import 'pages/pay.dart';
 import 'pages/favorite.dart';
 import 'pages/home.dart';
 import 'pages/car.dart';
-import 'pages/mypage.dart';
+import 'pages/mypage.dart';  // MyPage 위젯을 사용하기 위해 import
 import 'pages/carinfo.dart';
-import 'firebase_options.dart'; // Firebase 옵션을 위한 import
+import 'pages/signup.dart';
+import 'firebase_options.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();  // Firebase 초기화 전에 반드시 호출
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);  // Firebase 초기화
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -43,21 +44,33 @@ class MyApp extends StatelessWidget {
 
 class TabView extends StatefulWidget {
   const TabView({super.key});
+
   @override
   State<TabView> createState() => _TabViewState();
 }
 
 class _TabViewState extends State<TabView> {
-  int _currentIndex = 2; // 홈 페이지가 기본
+  int _currentIndex = 2;
+  bool _isLoggedIn = false;  // 로그인 상태 관리
 
-  // _pages 리스트에서 const 제거
-  final List<Widget> _pages = [
-    PayPage(),
-    FavoritePage(),
-    HomePage(),
-    CarPage(),
-    MyPage(),
-  ];
+  // 페이지 목록
+  late List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    // 로그인 상태 초기화
+    _isLoggedIn = false; // 로그인 상태를 가져오는 로직을 여기에 추가할 수 있습니다.
+
+    // 페이지 목록 초기화
+    _pages = [
+      PayPage(),
+      FavoritePage(),
+      HomePage(),
+      CarPage(),
+      MyPage(),  // 로그인 상태 관리 MyPage로 변경
+    ];
+  }
 
   void _showSlidingbottom(BuildContext context) {
     showModalBottomSheet(

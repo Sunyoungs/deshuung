@@ -1,213 +1,145 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // FirebaseAuth 임포트
-import 'package:deshuung/pages/login.dart'; // 로그인 페이지 임포트
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'signup.dart';  // 회원가입 페이지로 이동하기 위한 import
 
 class MyPage extends StatefulWidget {
-  const MyPage({super.key});
+  const MyPage({Key? key}) : super(key: key);
 
   @override
-  State<MyPage> createState() => _MyPageState();
+  MyPageState createState() => MyPageState();
 }
 
-class _MyPageState extends State<MyPage> {
+class MyPageState extends State<MyPage> {
+  bool isLoggedIn = false; // 로그인 상태
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  bool isLoggingIn = false; // 로그인 여부 확인
-  String errorMessage = ''; // 에러 메시지 저장
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  @override
-  Widget build(BuildContext context) {
-    // 로그인 상태 확인
-    User? user = FirebaseAuth.instance.currentUser;
+  Future<void> _signIn() async {
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
 
-    // 로그인 상태가 아니라면 로그인 페이지로 이동 (로그인 폼 표시)
-    if (user == null && !isLoggingIn) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Login')),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              TextField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
-              ),
-              TextField(
-                controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Password'),
-                obscureText: true,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  setState(() {
-                    isLoggingIn = true;
-                    errorMessage = ''; // 초기화
-                  });
-
-                  try {
-                    // Firebase 로그인 시도
-                    UserCredential userCredential = await FirebaseAuth.instance
-                        .signInWithEmailAndPassword(
-                            email: _emailController.text,
-                            password: _passwordController.text);
-
-                    // 로그인 성공 시 MyPage로 이동
-                    if (userCredential.user != null) {
-                      setState(() {
-                        isLoggingIn = false;
-                      });
-                    }
-                  } on FirebaseAuthException catch (e) {
-                    setState(() {
-                      isLoggingIn = false;
-                      // FirebaseAuthException의 오류 코드에 따라 에러 메시지 처리
-                      if (e.code == 'user-not-found') {
-                        errorMessage = '회원가입된 사용자가 아닙니다.';
-                      } else if (e.code == 'wrong-password') {
-                        errorMessage = '잘못된 비밀번호입니다.';
-                      } else if (e.code == 'invalid-email') {
-                        errorMessage = '잘못된 이메일 형식입니다.';
-                      } else if (e.code == 'network-request-failed') {
-                        errorMessage = '네트워크에 문제가 발생했습니다. 다시 시도해주세요.';
-                      } else {
-                        errorMessage = '로그인 실패: ${e.message}';
-                      }
-                    });
-                  }
-                },
-                child: const Text('Login'),
-              ),
-              if (errorMessage.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: Text(
-                    errorMessage,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                ),
-              if (isLoggingIn) const CircularProgressIndicator(),
-              // 회원가입 버튼 추가
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SignupPage()),
-                  );
-                },
-                child: const Text('회원가입'),
-              ),
-            ],
-          ),
-        ),
+    try {
+      // Firebase Authentication을 통한 기본 로그인 시도
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
       );
-    }
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('My Page')),
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('accounts').snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          var data = snapshot.data!.docs;
-          return ListView.builder(
-            itemCount: data.length,
-            itemBuilder: (context, index) {
-              var account = data[index].data();
-              return ListTile(
-                title: Text(account['name']),
-                subtitle: Text(account['email']),
-              );
-            },
+      // Firestore에서 이메일과 비밀번호 확인
+      DocumentSnapshot userDoc = await _firestore.collection('accounts').doc(email).get();
+
+      if (userDoc.exists) {
+        // Firestore에서 비밀번호 확인
+        String storedPassword = userDoc['password'];
+        
+        if (storedPassword == password) {
+          // 비밀번호가 일치하면 로그인 성공
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('로그인 성공')),
           );
-        },
-      ),
+          setState(() {
+            isLoggedIn = true;  // 로그인 상태 업데이트
+          });
+        } else {
+          // 비밀번호가 일치하지 않으면 오류 처리
+          _showErrorDialog('비밀번호가 일치하지 않습니다.');
+        }
+      } else {
+        // Firestore에 사용자 정보가 없으면 오류 처리
+        _showErrorDialog('등록된 사용자 정보가 없습니다.');
+      }
+    } on FirebaseAuthException catch (e) {
+      // FirebaseAuth 예외 처리
+      if (e.code == 'user-not-found') {
+        _showErrorDialog('등록된 이메일이 없습니다.');
+      } else if (e.code == 'wrong-password') {
+        _showErrorDialog('잘못된 비밀번호입니다.');
+      } else {
+        _showErrorDialog('오류 발생: ${e.message}');
+      }
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('로그인 오류'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('확인'),
+            ),
+          ],
+        );
+      },
     );
   }
-}
-
-class SignupPage extends StatefulWidget {
-  const SignupPage({super.key});
-
-  @override
-  State<SignupPage> createState() => _SignupPageState();
-}
-
-class _SignupPageState extends State<SignupPage> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  bool isRegistering = false;
-  String errorMessage = '';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('회원가입')),
+      appBar: AppBar(
+        title: Text('My Page'),
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                setState(() {
-                  isRegistering = true;
-                  errorMessage = '';
-                });
-
-                try {
-                  // Firebase 회원가입 시도
-                  UserCredential userCredential = await FirebaseAuth.instance
-                      .createUserWithEmailAndPassword(
-                          email: _emailController.text,
-                          password: _passwordController.text);
-
-                  if (userCredential.user != null) {
-                    setState(() {
-                      isRegistering = false;
-                    });
-                    Navigator.pop(context); // 회원가입 후 로그인 화면으로 돌아가기
-                  }
-                } on FirebaseAuthException catch (e) {
-                  setState(() {
-                    isRegistering = false;
-                    if (e.code == 'email-already-in-use') {
-                      errorMessage = '이 이메일은 이미 사용 중입니다.';
-                    } else if (e.code == 'invalid-email') {
-                      errorMessage = '잘못된 이메일 형식입니다.';
-                    } else if (e.code == 'weak-password') {
-                      errorMessage = '비밀번호는 6자 이상이어야 합니다.';
-                    } else {
-                      errorMessage = '회원가입 실패: ${e.message}';
-                    }
-                  });
-                }
-              },
-              child: const Text('회원가입'),
-            ),
-            if (errorMessage.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: Text(
-                  errorMessage,
-                  style: const TextStyle(color: Colors.red),
+        padding: EdgeInsets.all(16.0),
+        child: isLoggedIn
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Text('로그인 상태'),
+                    SizedBox(height: 16),
+                    Text('여기서 로그아웃 기능을 추가할 수 있습니다.'), 
+                  ],
                 ),
+              )
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextField(
+                    controller: _emailController,
+                    decoration: InputDecoration(
+                      labelText: '이메일',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  SizedBox(height: 16.0),
+                  TextField(
+                    controller: _passwordController,
+                    decoration: InputDecoration(
+                      labelText: '비밀번호',
+                      border: OutlineInputBorder(),
+                    ),
+                    obscureText: true,
+                  ),
+                  SizedBox(height: 32.0),
+                  ElevatedButton(
+                    onPressed: _signIn,
+                    child: Text('로그인'),
+                  ),
+                  SizedBox(height: 16.0),
+                  TextButton(
+                    onPressed: () {
+                      // 회원가입 화면으로 이동
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SignUpPage()),
+                      );
+                    },
+                    child: Text('회원가입'),
+                  ),
+                ],
               ),
-            if (isRegistering) const CircularProgressIndicator(),
-          ],
-        ),
       ),
     );
   }
