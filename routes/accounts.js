@@ -1,21 +1,31 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
-const bodyParser = require('body-parser');
+const admin = require('firebase-admin');
 const bcrypt = require('bcryptjs');
+const bodyParser = require('body-parser');
 require('dotenv').config();
 
 const app = express();
-const BLACKLISTED_TOKENS = new Set(); // 블랙리스트 저장
+const PORT = process.env.PORT || 5000;
 
-//mongoDB로 되어 있음 -> firestore로 변경 
+app.use(bodyParser.json());
+
+// Firebase Admin SDK 초기화
+admin.initializeApp({
+    credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_CREDENTIALS))
+});
+
+const db = admin.firestore();
+
 // 회원가입 엔드포인트 (변경: '/register' → '/user/register')
-app.post('/register', async (req, res) => {
+app.post('/user/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
 
         // 기존 사용자 확인
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
+        const usersRef = db.collection('users');
+        const existingUser = await usersRef.where('email', '==', email).get();
+        
+        if (!existingUser.empty) {
             return res.status(400).json({ message: '이미 존재하는 이메일입니다.' });
         }
 
@@ -23,9 +33,13 @@ app.post('/register', async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // 새로운 사용자 생성
-        const newUser = new User({ username, email, password: hashedPassword });
-        await newUser.save();
+        // Firestore에 새로운 사용자 추가
+        await usersRef.add({
+            username,
+            email,
+            password: hashedPassword,
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+        });
 
         res.status(201).json({ message: '회원가입 성공' });
     } catch (error) {
