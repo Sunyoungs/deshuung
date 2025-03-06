@@ -48,9 +48,12 @@ class _SignUpPageState extends State<SignUpPage> {
               controller: nameController,
               decoration: const InputDecoration(labelText: 'Name'),
             ),
-            ElevatedButton(
-              onPressed: _signUp,
-              child: const Text('Sign Up'),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
+              child: ElevatedButton(
+                onPressed: _signUp,
+                child: const Text('Sign Up'),
+              ),
             ),
           ],
         ),
