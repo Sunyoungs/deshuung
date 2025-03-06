@@ -19,7 +19,7 @@ Future<void> registerUser(String email, String password, String name) async {
       'password': password,  // 암호는 보안상 다른 방법으로 저장하는 것이 좋습니다.
       'paymentMethods': [],  // 기본값으로 빈 리스트 (추후 추가할 결제 수단 정보)
       'registeredCars': [],  // 기본값으로 빈 리스트 (추후 추가할 차량 정보)
-      'favorite': []
+      'favorite': {}
     });
   } catch (e) {
     print('Error registering user: $e');

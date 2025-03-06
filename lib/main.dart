@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore 관련 import 추가
 import 'pages/pay.dart';
 import 'pages/favorite.dart';
 import 'pages/home.dart';
@@ -52,6 +53,7 @@ class TabView extends StatefulWidget {
 class _TabViewState extends State<TabView> {
   int _currentIndex = 2;
   bool _isLoggedIn = false;  // 로그인 상태 관리
+  String? _userEmail;  // 사용자 이메일을 저장하는 변수
 
   // 페이지 목록
   late List<Widget> _pages;
@@ -59,17 +61,40 @@ class _TabViewState extends State<TabView> {
   @override
   void initState() {
     super.initState();
-    // 로그인 상태 초기화
-    _isLoggedIn = false; // 로그인 상태를 가져오는 로직을 여기에 추가할 수 있습니다.
+
+    // 로그인 상태 초기화 (예시로 true로 설정, 실제 로그인 상태 관리 필요)
+    _isLoggedIn = true;  
+
+    // Firestore에서 사용자 이메일을 가져옴
+    _getUserEmail().then((email) {
+      setState(() {
+        _userEmail = email; // Firestore에서 이메일 가져오기
+      });
+    });
 
     // 페이지 목록 초기화
     _pages = [
       PayPage(),
-      FavoritePage(userEmail: _isLoggedIn ? 'example@email.com' : null),
+      FavoritePage(userEmail: _userEmail),  // 로그인 상태에 따라 email 전달
       HomePage(),
       CarPage(),
       MyPage(),  // 로그인 상태 관리 MyPage로 변경
     ];
+  }
+
+  // Firestore에서 이메일을 가져오는 함수
+  Future<String?> _getUserEmail() async {
+    // Firestore에서 현재 사용자의 이메일을 가져오는 로직
+    var userSnapshot = await FirebaseFirestore.instance
+        .collection('accounts')  // 사용자 정보를 저장한 'accounts' 컬렉션
+        .doc('userID')  // 사용자 ID로 문서 조회, 실제로는 로그인된 사용자의 ID를 가져와야 함
+        .get();
+
+    if (userSnapshot.exists) {
+      return userSnapshot.data()?['email'];  // 이메일 반환
+    } else {
+      return null;  // 이메일을 찾을 수 없을 경우 null 반환
+    }
   }
 
   void _showSlidingbottom(BuildContext context) {
