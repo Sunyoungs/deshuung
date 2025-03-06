@@ -155,7 +155,7 @@ class _TabViewState extends State<TabView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Deshuung'),
+        title: const Text('드슝', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: const Icon(Icons.notification_important),
@@ -171,7 +171,7 @@ class _TabViewState extends State<TabView> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         onPressed: () => _showSlidingbottom(context),
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.car_crash),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
