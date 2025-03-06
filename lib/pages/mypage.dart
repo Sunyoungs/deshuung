@@ -18,50 +18,42 @@ class MyPageState extends State<MyPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<void> _signIn() async {
-    String email = _emailController.text.trim();
-    String password = _passwordController.text.trim();
+  String email = _emailController.text.trim();
+  String password = _passwordController.text.trim();
 
-    try {
-      // Firebase Authentication을 통한 기본 로그인 시도
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
+  try {
+    // Firebase Authentication을 통한 로그인
+    UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    // Firestore에서 이메일 기반으로 사용자 찾기
+    QuerySnapshot userSnapshot = await _firestore
+        .collection('accounts')
+        .where('email', isEqualTo: email)
+        .get();
+
+    if (userSnapshot.docs.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('로그인 성공')),
       );
-
-      // Firestore에서 이메일과 비밀번호 확인
-      DocumentSnapshot userDoc = await _firestore.collection('accounts').doc(email).get();
-
-      if (userDoc.exists) {
-        // Firestore에서 비밀번호 확인
-        String storedPassword = userDoc['password'];
-        
-        if (storedPassword == password) {
-          // 비밀번호가 일치하면 로그인 성공
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('로그인 성공')),
-          );
-          setState(() {
-            isLoggedIn = true;  // 로그인 상태 업데이트
-          });
-        } else {
-          // 비밀번호가 일치하지 않으면 오류 처리
-          _showErrorDialog('비밀번호가 일치하지 않습니다.');
-        }
-      } else {
-        // Firestore에 사용자 정보가 없으면 오류 처리
-        _showErrorDialog('등록된 사용자 정보가 없습니다.');
-      }
-    } on FirebaseAuthException catch (e) {
-      // FirebaseAuth 예외 처리
-      if (e.code == 'user-not-found') {
-        _showErrorDialog('등록된 이메일이 없습니다.');
-      } else if (e.code == 'wrong-password') {
-        _showErrorDialog('잘못된 비밀번호입니다.');
-      } else {
-        _showErrorDialog('오류 발생: ${e.message}');
-      }
+      setState(() {
+        isLoggedIn = true;
+      });
+    } else {
+      _showErrorDialog('등록된 사용자 정보가 없습니다.');
+    }
+  } on FirebaseAuthException catch (e) {
+    if (e.code == 'user-not-found') {
+      _showErrorDialog('등록된 이메일이 없습니다.');
+    } else if (e.code == 'wrong-password') {
+      _showErrorDialog('잘못된 비밀번호입니다.');
+    } else {
+      _showErrorDialog('오류 발생: ${e.message}');
     }
   }
+}
 
   void _showErrorDialog(String message) {
     showDialog(

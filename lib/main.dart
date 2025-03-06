@@ -65,7 +65,7 @@ class _TabViewState extends State<TabView> {
     // 페이지 목록 초기화
     _pages = [
       PayPage(),
-      FavoritePage(),
+      FavoritePage(userEmail: _isLoggedIn ? 'example@email.com' : null),
       HomePage(),
       CarPage(),
       MyPage(),  // 로그인 상태 관리 MyPage로 변경
