@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'order.dart';
 
-List<String> resitems = ['식당 1', '식당 2', '식당 3', '식당 4'];
-
 class FavoritePage extends StatefulWidget {
   const FavoritePage({Key? key}) : super(key: key);
 
