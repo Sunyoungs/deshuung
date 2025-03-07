@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class OrderPage extends StatefulWidget {
+class OrderPage1 extends StatefulWidget {
   final String storeId;
 
-  const OrderPage({super.key, required this.storeId});
+  const OrderPage1({super.key, required this.storeId});
 
   @override
   OrderPageState createState() => OrderPageState();
 }
 
-class OrderPageState extends State<OrderPage> {
+class OrderPageState extends State<OrderPage1> {
   late Future<DocumentSnapshot> _storeDetails;
   List<String> _selectedMenu = [];
 

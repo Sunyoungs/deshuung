@@ -1,7 +1,8 @@
+import 'package:deshuung/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'signup.dart';  // 회원가입 페이지로 이동하기 위한 import
+import 'signup.dart';
 
 class MyPage extends StatefulWidget {
   const MyPage({Key? key}) : super(key: key);
@@ -11,55 +12,87 @@ class MyPage extends StatefulWidget {
 }
 
 class MyPageState extends State<MyPage> {
-  bool isLoggedIn = false; // 로그인 상태
+  bool isLoggedIn = false;
+  String? userName;
+  String? userEmail;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    checkLoginStatus();
+  }
+
+  Future<void> checkLoginStatus() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      setState(() {
+        isLoggedIn = true;
+        userEmail = user.email;
+      });
+      await fetchUserInfo(user.uid);
+    }
+  }
+
+  Future<void> fetchUserInfo(String uid) async {
+    try {
+      DocumentSnapshot userDoc = await _firestore.collection('accounts').doc(uid).get();
+      if (userDoc.exists) {
+        setState(() {
+          userName = userDoc.get('name') as String?;
+        });
+      }
+    } catch (e) {
+      print('사용자 정보 가져오기 실패: $e');
+    }
+  }
 
   Future<void> _signIn() async {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
 
     try {
-      // Firebase Authentication을 통한 기본 로그인 시도
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Firestore에서 이메일과 비밀번호 확인
-      DocumentSnapshot userDoc = await _firestore.collection('accounts').doc(email).get();
-
-      if (userDoc.exists) {
-        // Firestore에서 비밀번호 확인
-        String storedPassword = userDoc['password'];
-        
-        if (storedPassword == password) {
-          // 비밀번호가 일치하면 로그인 성공
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('로그인 성공')),
-          );
-          setState(() {
-            isLoggedIn = true;  // 로그인 상태 업데이트
-          });
-        } else {
-          // 비밀번호가 일치하지 않으면 오류 처리
-          _showErrorDialog('비밀번호가 일치하지 않습니다.');
-        }
-      } else {
-        // Firestore에 사용자 정보가 없으면 오류 처리
-        _showErrorDialog('등록된 사용자 정보가 없습니다.');
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('로그인 성공')),
+      );
+      setState(() {
+        isLoggedIn = true;
+        userEmail = email;
+      });
+      await fetchUserInfo(userCredential.user!.uid);
     } on FirebaseAuthException catch (e) {
-      // FirebaseAuth 예외 처리
+      String message;
       if (e.code == 'user-not-found') {
-        _showErrorDialog('등록된 이메일이 없습니다.');
+        message = '등록된 이메일이 없습니다.';
       } else if (e.code == 'wrong-password') {
-        _showErrorDialog('잘못된 비밀번호입니다.');
+        message = '잘못된 비밀번호입니다.';
       } else {
-        _showErrorDialog('오류 발생: ${e.message}');
+        message = '오류 발생: ${e.message}';
       }
+      _showErrorDialog(message);
+    }
+  }
+
+  Future<void> _signOut() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      print('로그아웃 성공');
+      setState(() {
+        isLoggedIn = false;
+        userName = null;
+        userEmail = null;
+      });
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MyApp()));
+    } catch (e) {
+      print('로그아웃 실패: $e');
     }
   }
 
@@ -68,14 +101,12 @@ class MyPageState extends State<MyPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('로그인 오류'),
+          title: const Text('로그인 오류'),
           content: Text(message),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('확인'),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('확인'),
             ),
           ],
         );
@@ -87,56 +118,107 @@ class MyPageState extends State<MyPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Page'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: isLoggedIn
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Text('로그인 상태'),
-                    SizedBox(height: 16),
-                    Text('여기서 로그아웃 기능을 추가할 수 있습니다.'), 
-                  ],
-                ),
+            ? Column(
+                children: [
+                  const SizedBox(height: 40),
+                  Center(
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.person,
+                            size: 50,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 16.0),
+                        Text(
+                          userName ?? '닉네임 없음',
+                          style: const TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8.0),
+                        Text(
+                          userEmail ?? '이메일 없음',
+                          style: const TextStyle(
+                            fontSize: 16.0,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: _signOut,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[100],
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 12.0),
+                      ),
+                      child: const Text('로그아웃', style: TextStyle(fontSize: 16.0)),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                ],
               )
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   TextField(
                     controller: _emailController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: '이메일',
                       border: OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.emailAddress,
                   ),
-                  SizedBox(height: 16.0),
+                  const SizedBox(height: 16.0),
                   TextField(
                     controller: _passwordController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: '비밀번호',
                       border: OutlineInputBorder(),
                     ),
                     obscureText: true,
                   ),
-                  SizedBox(height: 32.0),
+                  const SizedBox(height: 32.0),
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[100],
+                      foregroundColor: Colors.black,
+                    ),
                     onPressed: _signIn,
-                    child: Text('로그인'),
+                    child: const Text('로그인'),
                   ),
-                  SizedBox(height: 16.0),
+                  const SizedBox(height: 16.0),
                   TextButton(
                     onPressed: () {
-                      // 회원가입 화면으로 이동
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => SignUpPage()),
+                        MaterialPageRoute(builder: (context) => const SignUpPage()),
                       );
                     },
-                    child: Text('회원가입'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.black,
+                    ),
+                    child: const Text('회원가입'),
                   ),
                 ],
               ),

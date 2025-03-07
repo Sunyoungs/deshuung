@@ -36,7 +36,7 @@ class CarinfoPage extends StatelessWidget {
               Image.network('https://cdn.insightkorea.co.kr/news/photo/202107/90394_86238_3429.jpg',
                   height: 300),
               const SizedBox(height: 20),
-              const Text('62자 2643',
+              const Text('62자 264a3',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
               GestureDetector(
